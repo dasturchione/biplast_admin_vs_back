@@ -29,4 +29,14 @@ class ProductController extends Controller
         $product = Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
         return new ProductResource($product);
     }
+
+    public function similar($slug)
+    {
+        $product = Product::where('slug', $slug)->firstOrFail();
+        $products = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->limit(3)
+            ->get();
+        return ProductResource::collection($products);
+    }
 }

@@ -18,6 +18,10 @@ class Product extends Model
         'category_id',
         'name',
         'slug',
+        'artikul',
+        'weight',
+        'size',
+        'packaging',
         'price',
         'description',
         'is_active'
@@ -31,6 +35,11 @@ class Product extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class);
+    }
+
+    public function colors()
+    {
+        return $this->hasMany(ProductColor::class);
     }
 
     public function seo()

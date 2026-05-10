@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Repeater;
@@ -23,23 +24,41 @@ class ProductForm
                     Section::make("Mahsulot malumotlari")->schema([
                         TextInput::make('name')
                             ->required(),
+                        TextInput::make('weight')
+                            ->label("Vazni (gram)")
+                            ->type('number')
+                            ->required(),
+                        TextInput::make('artikul')
+                            ->label("Artikul")
+                            ->required(),
+                        TextInput::make('size')
+                            ->label("O'lchami")
+                            ->required(),
+                        TextInput::make('packaging')
+                            ->label("Qadoqdagi soni")
+                            ->type('number')
+                            ->nullable(),
                         MarkdownEditor::make('description')
                             ->columnSpanFull()
                             ->fileAttachmentsDirectory('products'),
                     ])->columns(2),
-                    Section::make("Rasmlar")->schema([
-                        Repeater::make('images')
-                            ->relationship() // 🔥 bu repeaterda ishlaydi
-                            ->schema([
-                                FileUpload::make('image')
-                                    ->image()
-                                    ->directory('products')
-                                    ->imageEditor()
-                                    ->required(),
-                            ])
-                            ->reorderable()
-                            ->columnSpanFull()
-                    ])->columnSpan(2)
+                    Section::make("Rasmlar va rangilari")->schema([
+                        Repeater::make('images')->relationship()->schema([
+                            FileUpload::make('image')
+                                ->image()
+                                ->directory('products')
+                                ->imageEditor()
+                                ->required(),
+                        ])->reorderable()->columnSpan(1),
+                        Repeater::make('colors')->relationship()->label("Ranglar")->schema([
+                            TextInput::make('name')
+                            ->label("Rang nomi")
+                                ->nullable(),
+                            ColorPicker::make('code')
+                            ->label("Rang kodi")
+                                ->required()
+                        ])
+                    ])->columnSpan(2)->columns(2)
                 ])->columnSpan(2),
                 Group::make()->schema([
                     Section::make("Narxi")

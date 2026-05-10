@@ -17,10 +17,19 @@ class BannersTable
     {
         return $table
             ->columns([
+                ImageColumn::make('image')
+                    ->label('Image')
+                    ->checkFileExistence(false)
+                    ->stacked()
+                    ->imageSize(40)
+                    ->limit(3)
+                    ->limitedRemainingText()
+                    ->extraImgAttributes([
+                        'alt' => 'Logo',
+                        'loading' => 'lazy',
+                    ]),
                 TextColumn::make('title')
                     ->searchable(),
-                ImageColumn::make('file'),
-
                 TextColumn::make('file')
                     ->label('Video')
                     ->formatStateUsing(fn($state, $record) => '🎥 Video')
