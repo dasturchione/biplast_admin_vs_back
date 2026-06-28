@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             // media
             $table->string('title');
-            $table->string('file'); // rasm yoki video
+            $table->string('image'); // rasm yoki video
             $table->enum('type', ['image', 'video']); // MUHIM 🔥
 
             // optional

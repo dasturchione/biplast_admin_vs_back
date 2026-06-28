@@ -25,6 +25,8 @@ return new class extends Migration
 
             $table->boolean('is_published')->default(false);
             $table->timestamp('published_at')->nullable();
+
+            $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
