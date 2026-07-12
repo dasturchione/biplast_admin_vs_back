@@ -97,11 +97,40 @@ class ExcelImportAction extends ImportAction
 
         $stream = fopen('php://temp/maxmemory:' . (5 * 1024 * 1024), 'r+');
 
-        foreach ($worksheet->toArray(null, true, false, false) as $row) {
+        $rows = $worksheet->toArray(null, true, false, false);
+
+        $spreadsheet->disconnectWorksheets();
+        unset($spreadsheet);
+
+        // Qaysi ustun indekslarida hech bo'lmasa bitta qiymat borligini aniqlaymiz.
+        // Butunlay bo'sh ustunlar (ghost columns / nomsiz sarlavhalar) CSV'ga tushmasligi
+        // kerak — aks holda header qatorida bir nechta bo'sh katak paydo bo'lib,
+        // Filament "birdan ortiq bo'sh ustun sarlavhasi" xatosini beradi.
+        $nonEmptyColumns = [];
+
+        foreach ($rows as $row) {
+            foreach ($row as $columnIndex => $cell) {
+                if (filled($cell)) {
+                    $nonEmptyColumns[$columnIndex] = true;
+                }
+            }
+        }
+
+        ksort($nonEmptyColumns);
+        $nonEmptyColumns = array_keys($nonEmptyColumns);
+
+        // Barcha ustunlar bo'sh bo'lsa — yozadigan narsa yo'q.
+        if ($nonEmptyColumns === []) {
+            rewind($stream);
+
+            return $stream;
+        }
+
+        foreach ($rows as $row) {
             // To'liq bo'sh qatorlarni o'tkazib yuboramiz
             $hasValue = false;
-            foreach ($row as $cell) {
-                if (filled($cell)) {
+            foreach ($nonEmptyColumns as $columnIndex) {
+                if (filled($row[$columnIndex] ?? null)) {
                     $hasValue = true;
                     break;
                 }
@@ -111,14 +140,15 @@ class ExcelImportAction extends ImportAction
                 continue;
             }
 
-            fputcsv(
-                $stream,
-                array_map(static fn ($value): string => $value === null ? '' : (string) $value, $row),
-            );
-        }
+            // Faqat ma'lumotli ustunlarni saqlaymiz.
+            $filteredRow = [];
+            foreach ($nonEmptyColumns as $columnIndex) {
+                $value = $row[$columnIndex] ?? null;
+                $filteredRow[] = $value === null ? '' : (string) $value;
+            }
 
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet);
+            fputcsv($stream, $filteredRow);
+        }
 
         rewind($stream);
 
