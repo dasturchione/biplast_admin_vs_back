@@ -25,9 +25,9 @@ class BannerForm
                     ->required()
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
-                        $set('file', null); // 🔥 file ni reset qiladi
+                        $set('image', null); // 🔥 file ni reset qiladi
                     }),
-                FileUpload::make('file')
+                FileUpload::make('image')
                     ->required()
                     ->directory('banners')
                     ->reactive()
