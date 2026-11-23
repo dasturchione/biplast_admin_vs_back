@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class CategoryController extends Controller
 {
     public function index() {
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::where('is_active', true)->ordered()->get();
         return CategoryResource::collection($categories);
     }
 }

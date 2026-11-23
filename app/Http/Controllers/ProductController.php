@@ -19,7 +19,14 @@ class ProductController extends Controller
             });
         }
 
-        $products = $query->paginate(10);
+        if ($request->filled('search')) {
+            $query->search((string) $request->input('search'));
+        }
+
+        $perPage = min(max($request->integer('per_page', 10), 1), 50);
+        $products = $query->with(['category', 'images', 'colors'])
+            ->paginate($perPage)
+            ->withQueryString();
 
         return ProductResource::collection($products);
     }

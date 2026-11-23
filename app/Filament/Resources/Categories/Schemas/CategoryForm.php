@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categories\Schemas;
 
+use App\Models\Category;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -25,6 +26,16 @@ class CategoryForm
                                 TextInput::make('slug')
                                     ->disabled(),
                             ]),
+
+                        TextInput::make('sort_order')
+                            ->label('Tartib raqami')
+                            ->helperText('Saytda kategoriyalar shu raqam bo\'yicha o\'sish tartibida chiqadi.')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0)
+                            ->maxValue(1000000)
+                            ->required()
+                            ->default(fn () => Category::nextSortOrder()),
 
                         FileUpload::make('image')
                             ->image()

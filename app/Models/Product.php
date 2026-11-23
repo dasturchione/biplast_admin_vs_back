@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Sluggable\HasSlug;
@@ -45,6 +46,29 @@ class Product extends Model
     public function seo()
     {
         return $this->morphOne(Seo::class, 'seoable');
+    }
+
+    /**
+     * Nom (uz/ru) va artikul bo'yicha qidiruv. Har bir so'z topilishi shart.
+     * JSON qiymatlar MySQL'da utf8mb4_bin bo'lgani uchun LOWER() bilan solishtiriladi.
+     */
+    public function scopeSearch(Builder $query, string $term): Builder
+    {
+        $words = preg_split('/\s+/u', trim(mb_substr($term, 0, 100)), -1, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($words as $word) {
+            $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_strtolower($word));
+            // O'zbekcha tutuq belgisining barcha ko'rinishlari bir xil topilsin: o'g'il, o‘g‘il
+            $pattern = '%' . str_replace(["'", '`', '‘', '’', 'ʻ', 'ʼ'], '_', $escaped) . '%';
+
+            $query->where(function (Builder $q) use ($pattern) {
+                $q->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.uz'))) LIKE ? ESCAPE '!'", [$pattern])
+                    ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.ru'))) LIKE ? ESCAPE '!'", [$pattern])
+                    ->orWhereRaw("LOWER(artikul) LIKE ? ESCAPE '!'", [$pattern]);
+            });
+        }
+
+        return $query;
     }
 
     public function getSlugOptions(): SlugOptions
