@@ -23,8 +23,9 @@ class ProductController extends Controller
             $query->search((string) $request->input('search'));
         }
 
-        $perPage = min(max($request->integer('per_page', 10), 1), 50);
+        $perPage = min(max($request->integer('per_page', 12), 1), 50);
         $products = $query->with(['category', 'images', 'colors'])
+            ->latest()
             ->paginate($perPage)
             ->withQueryString();
 
